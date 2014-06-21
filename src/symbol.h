@@ -48,7 +48,7 @@ typedef struct Structure {
 
 typedef struct Value {
   Type *type;
-  void *val;
+  char *val;
 }
 
 typedef struct Symbol {

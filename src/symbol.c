@@ -190,6 +190,7 @@ int add_table_entry(TableEntry *entry){
     entry->next = NULL;
     table_size++;
   }
+  return 1;
 }
 
 void rehash_symbol_table(){
@@ -203,6 +204,7 @@ void rehash_symbol_table(){
 int add_symbol(Symbol *symbol){
   TableEntry *entry = malloc_table_entry();
   entry->symbol = symbol;
+  entry->index = ~0;
   if(symbol->val == NULL){
     entry->symbol_type = RESERVED_WORD;
   }else{
@@ -210,6 +212,23 @@ int add_symbol(Symbol *symbol){
   }
   return add_table_entry(entry);
 }
+
+Symbol* make_symbol(char *name, Value *value){
+  Symbol *symbol = malloc_symbol();
+  strncpy(symbol->name,name,SYMBOL_NAME_LENGTH);
+  symbol->val = value;
+  return symbol;
+}
+
+Value* make_value(Type *type, char *val){
+  Value *value = malloc_value();
+  value->type = type;
+  value->val = malloc(strlen(val));
+  strcpy(value->val,val);
+  return value;
+}
+
+
 
 int exists_symbol(char *name);
 
