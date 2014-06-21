@@ -119,17 +119,21 @@ void free_hashtable(TableEntry **tbl){
   free_entry_list(entry_list);
 }
 
-unsigned long hash_symbol(Symbol symbol){
-  vprintf(LOW,"hashing symbol %s...\n",symbol->name);
+unsigned long hash_name(char *name){
+  vprintf(LOW,"hashing name %s...\n",symbol->name);
+  int length = strlen(name);
   unsigned long index = 0;
-  unsigned long offset = 37;
-  int length = strlen(symbol->name);
-  int i = 0;
+  unsigned long offset = 1;
+  int i;
   for(i=0;i<length;i++){
-    index += symbol->name[i] * offset;
-    offset *= 37;
+    index += name[i] * offset;
+    offset *= OFFSET_MULTIPLIER;
   }
   return index;
+}
+
+unsigned long hash_symbol(Symbol symbol){
+  return hash_name(symbol->name);
 }
 
 void init_symbol_table(){
@@ -228,13 +232,36 @@ Value* make_value(Type *type, char *val){
   return value;
 }
 
+Symbol* get_symbol(char *name){
+  unsigned long hash = hash_name(name);
+  int index = hash % table_capacity;
+  TableEntry *current;
+  for(current=table[index];current != null;current = current->next){
+    if(!strncmp(name,current->symbol->name,SYMBOL_NAME_LENGTH)){
+      return current->symbol;
+    }
+  }
+  return NULL;
+}
 
+int exists_symbol(char *name){
+  if(get_symbol(name) != NULL){
+    return 1;
+  }else{
+    return 0;
+  }
+}
 
-int exists_symbol(char *name);
-
-Type *get_variable_type(char *name);
-
-Symbol *get_symbol(char *name);
+Type *get_symbol_type(char *name){
+  Symbol *symbol = get_symbol(name);
+  if(symbol == NULL){
+    return NULL;
+  }
+  if(symbol->val == NULL){
+    return NULL;
+  }
+  return symbol->val->type;
+}
 
 int set_symbol(char *name, Value *value);
 

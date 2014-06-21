@@ -21,7 +21,7 @@ typedef enum {
   MODIFIER
 } Modifier;
 
-static const char *MODIFIER_NAMES = {
+static const char **MODIFIER_NAMES = {
   "INT",
   "FLOAT",
   "CHAR",
