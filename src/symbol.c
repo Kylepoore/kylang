@@ -27,6 +27,8 @@ void free_type(Type *type){
     return;
   }
   free_type(type->next);
+  free_structure(type->structure);
+  type->structure = NULL;
   free(type);
   type = NULL;
 }
@@ -165,7 +167,7 @@ int same_type(Type *typea, Type *typeb){
     return 0;
   }
 }
-
+//TODO: rewrite this function!
 int add_table_entry(TableEntry *entry){
   int index;
   if(entry->index == ~0){
@@ -178,10 +180,10 @@ int add_table_entry(TableEntry *entry){
     table[index] = entry;
     table[index]->next = NULL;
   }else{
-    for(current = table[index];current->next != NULL;current = current->next){
+    for(current = table[index];current->cnext != NULL;current = current->cnext){
       if(!strncompare(current->symbol->name,entry->symbol->name)){
         if(same_type(current->symbol->type,entry->symbol->type)){
-          entry->next = current->next;
+          entry->cnext = current->cnext;
           free_table_entry(current);
           *previous = entry;
         }else{
@@ -192,6 +194,10 @@ int add_table_entry(TableEntry *entry){
     }
     current->next = entry;
     entry->next = NULL;
+    entry->lnext = entry_list_head->lnext;
+    entry_list_head->lnext = entry;
+    entry->lprev = entry_list_head;
+    entry->lnext->lprev = entry;
     table_size++;
   }
   return 1;
@@ -232,16 +238,25 @@ Value* make_value(Type *type, char *val){
   return value;
 }
 
-Symbol* get_symbol(char *name){
+Table_Entry* get_table_entry(char *name){
   unsigned long hash = hash_name(name);
   int index = hash % table_capacity;
   TableEntry *current;
   for(current=table[index];current != null;current = current->next){
     if(!strncmp(name,current->symbol->name,SYMBOL_NAME_LENGTH)){
-      return current->symbol;
+      return current;
     }
   }
   return NULL;
+}
+
+
+Symbol* get_symbol(char *name){
+  TableEntry *entry = get_table_entry(name);
+  if(entry == NULL){
+    return NULL;
+  }
+  return entry->symbol;
 }
 
 int exists_symbol(char *name){
@@ -263,6 +278,27 @@ Type *get_symbol_type(char *name){
   return symbol->val->type;
 }
 
-int set_symbol(char *name, Value *value);
+int set_symbol(char *name, Value *value){
+  Symbol *symbol = get_symbol(name);
+  if(symbol == NULL){
+    return 0;
+  }
+  if(symbol->val == null){
+    symbol->val = value;
+    return 1;
+  }
+  free_value(symbol->val);
+  symbol->val = value;
+  return 1;
+}
 
-int unset_symbol(char *name);
+int unset_symbol(char *name){
+  TableEntry *entry = get_table_entry(name);
+  if(entry == NULL){
+    return 0;
+  }
+  entry->lprev->lnext = entry->lnext;
+  entry->lnext->lprev = entry->lprev 
+  entry->cprev->cnext = entry->cnext;
+  entry->cnext->cprev = entry->cprev 
+}

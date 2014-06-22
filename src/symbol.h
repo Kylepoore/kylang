@@ -60,7 +60,10 @@ typedef struct TableEntry {
   SymbolType symbol_type;
   Symbol *symbol;
   unsigned long index;
-  TableEntry *next;
+  TableEntry *lprev;
+  TableEntry *lnext;
+  TableEntry *cprev;
+  TableEntry *cnext;
 } TableEntry;
 
 int exists_symbol(char *name);
