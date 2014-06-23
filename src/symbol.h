@@ -72,11 +72,11 @@ int exists_symbol(char *name);
 
 Type *get_symbol_type(char *name);
 
-Variable *get_variable(char *name);
+Symbol *get_symbol(char *name);
 
-int set_variable(char *name, Value *value);
+int set_symbol(char *name, Value *value);
 
-int unset_variable(char *name);
+int unset_symbol(char *name);
 
 
 

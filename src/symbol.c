@@ -2,7 +2,10 @@
 
 #define HASHTABLE_INIT_SIZE 1117
 #define GROWTH_FACTOR 1.5
+#define REHASH_RATIO .75
+
 #define ODDIFY(A) ((A)|1)
+
 
 int table_size;
 int table_capacity;
@@ -207,25 +210,16 @@ int add_table_entry(TableEntry *entry){
     current->cnext = entry;
     entry->cnext = NULL;
     entry->cprev = current;
-    if(entry_list_head == NULL){
-      entry_list_head = entry;
-      entry->lnext = NULL;
-      entry->lprev = NULL;
-    }else{
-      entry->lnext = entry_list_head;
-      entry->lprev = NULL;
-      entry_list_head->lprev = entry;
-      entry_list_head = entry;
-    }
     table_size++;
   }
-  return 0;
+  return 2;
 }
 
 void rehash_symbol_table(){
   table_capacity = grow_hashtable(&table,table_capacity);
   TableEntry current;
-  for(current = entry_list_head; current != NULL; current = current->next){
+  table_size = 0;
+  for(current = entry_list_head; current != NULL; current = current->lnext){
     add_entry(current);
   }
 }
@@ -239,7 +233,29 @@ int add_symbol(Symbol *symbol){
   }else{
     entry->symbol_type = VARIABLE;
   }
-  return add_table_entry(entry);
+
+  int result;
+  if((result = add_table_entry(entry)) == 1){
+    return result;
+  }
+
+  if(result == 2){
+    return !result;
+  }
+
+  if(entry_list_head == NULL){
+    entry_list_head = entry;
+    entry->lnext = NULL;
+    entry->lprev = NULL;
+  }else{
+    entry->lnext = entry_list_head;
+    entry->lprev = NULL;
+    entry_list_head->lprev = entry;
+    entry_list_head = entry;
+  }
+  if((float)table_size/(float)table_capacity > REHASH_RATIO){
+    rehash_symbol_table();
+  }
 }
 
 Symbol* make_symbol(char *name, Value *value){
