@@ -1,6 +1,6 @@
 #include "includes.h"
 
-#define OPTION_STRING "vqf:e:"
+#define OPTION_STRING "v:qf:e:"
 
 int verbosity;
 int quiet;
@@ -26,7 +26,7 @@ int main(int argc, char **argv){
     switch(c){
       case 'v':
         //verbose mode
-        verbosity++;
+        verbosity = atoi(optarg);
         break;
       case 'q':
         //quiet mode
