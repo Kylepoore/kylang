@@ -17,6 +17,7 @@ typedef enum {
   TUPLE,
   FUNCTION,
   TYPE,
+  PATTERN,
   CONSTANT,
   MODIFIER
 } Modifier;
@@ -29,6 +30,7 @@ static const char **MODIFIER_NAMES = {
   "TUPLE",
   "FUNCTION",
   "TYPE",
+  "PATTERN",
   "CONSTANT",
   "MODIFIER"
 };

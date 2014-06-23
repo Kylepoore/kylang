@@ -142,6 +142,9 @@ void init_symbol_table(){
   table_capacity = HASHTABLE_INIT_SIZE;
   table_size = 0;
   table = malloc_hashtable();
+  if(table == NULL){
+    eprintf("Error: symbol table allocation failed");
+  }
 }
 
 int same_type(Type *typea, Type *typeb){
@@ -167,7 +170,7 @@ int same_type(Type *typea, Type *typeb){
     return 0;
   }
 }
-//TODO: rewrite this function!
+
 int add_table_entry(TableEntry *entry){
   int index;
   if(entry->index == ~0){
@@ -175,32 +178,48 @@ int add_table_entry(TableEntry *entry){
   }
   index = entry->index % table_capacity;
 
-  TableEntry *current, **previous = &table[index];
+  TableEntry *current;
   if(table[index] == NULL){
     table[index] = entry;
-    table[index]->next = NULL;
+    table[index]->cnext = NULL;
+    table[index]->cprev = NULL;
   }else{
     for(current = table[index];current->cnext != NULL;current = current->cnext){
       if(!strncompare(current->symbol->name,entry->symbol->name)){
         if(same_type(current->symbol->type,entry->symbol->type)){
           entry->cnext = current->cnext;
+          entry->cprev = current->cprev;
+          if(current->cprev == NULL){
+            table[index] = entry;
+          }else{
+            current->cprev->cnext = entry;
+          }
+          if(current->cnext != NULL){
+            current->cnext->cprev = entry;
+          }
           free_table_entry(current);
-          *previous = entry;
-        }else{
           return 0;
+        }else{
+          return 1;
         }
       }
-      previous = &current;
     }
-    current->next = entry;
-    entry->next = NULL;
-    entry->lnext = entry_list_head->lnext;
-    entry_list_head->lnext = entry;
-    entry->lprev = entry_list_head;
-    entry->lnext->lprev = entry;
+    current->cnext = entry;
+    entry->cnext = NULL;
+    entry->cprev = current;
+    if(entry_list_head == NULL){
+      entry_list_head = entry;
+      entry->lnext = NULL;
+      entry->lprev = NULL;
+    }else{
+      entry->lnext = entry_list_head;
+      entry->lprev = NULL;
+      entry_list_head->lprev = entry;
+      entry_list_head = entry;
+    }
     table_size++;
   }
-  return 1;
+  return 0;
 }
 
 void rehash_symbol_table(){
@@ -281,24 +300,41 @@ Type *get_symbol_type(char *name){
 int set_symbol(char *name, Value *value){
   Symbol *symbol = get_symbol(name);
   if(symbol == NULL){
-    return 0;
+    return 1;
   }
   if(symbol->val == null){
     symbol->val = value;
-    return 1;
+    return 0;
   }
   free_value(symbol->val);
   symbol->val = value;
-  return 1;
+  return 0;
 }
 
 int unset_symbol(char *name){
   TableEntry *entry = get_table_entry(name);
   if(entry == NULL){
-    return 0;
+    return 1;
   }
-  entry->lprev->lnext = entry->lnext;
-  entry->lnext->lprev = entry->lprev 
-  entry->cprev->cnext = entry->cnext;
-  entry->cnext->cprev = entry->cprev 
+
+  if(entry->lprev != NULL){
+    entry->lprev->lnext = entry->lnext;
+  }else{
+    entry_list_head = entry->lnext;
+  }
+  if(entry->lnext != NULL){
+    entry->lnext->lprev = entry->lprev;
+  }
+  
+  if(entry->cprev != NULL){
+    entry->cprev->cnext = entry->cnext;
+  }else{
+    tabe[entry->hash % table_capacity] = entry->cnext;
+  }
+  if(entry->cnext != NULL){
+    entry->cnext->cprev = entry->cprev 
+  }
+
+  free_table_entry(entry);
+  return 0;
 }
