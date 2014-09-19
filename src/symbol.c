@@ -348,7 +348,7 @@ int unset_symbol(char *name){
     tabe[entry->hash % table_capacity] = entry->cnext;
   }
   if(entry->cnext != NULL){
-    entry->cnext->cprev = entry->cprev 
+    entry->cnext->cprev = entry->cprev;
   }
 
   free_table_entry(entry);
