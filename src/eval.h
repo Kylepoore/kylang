@@ -2,6 +2,7 @@
 #define EVAL_H
 
 #include "includes.h"
+#include "symbol.h"
 
 typedef enum{
   BRACES,

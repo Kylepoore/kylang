@@ -13,7 +13,7 @@ InputLine * get_input_line(FILE *fp){
     current->next = NULL;
     ret = fgets(current->value, LINE_SEGMENT_LENGTH - 1, fp);
     if(ret == NULL){
-      vprintf("eof or error\n");
+      eprintf("eof or error\n");
       current->length = strlen(current->value);
       done = 1;
     }else{

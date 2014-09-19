@@ -9,7 +9,7 @@ typedef struct InputLine {
   struct InputLine *next;
 } InputLine;
 
-InputLine * get_input_line(int file_id);
+InputLine * get_input_line(FILE *fp);
 
 
 

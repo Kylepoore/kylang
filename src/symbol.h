@@ -22,7 +22,7 @@ typedef enum {
   MODIFIER
 } Modifier;
 
-static const char **MODIFIER_NAMES = {
+static const char *MODIFIER_NAMES[] = {
   "INT",
   "FLOAT",
   "CHAR",
@@ -44,14 +44,14 @@ typedef struct Type {
 } Type;
 
 typedef struct Structure {
-  struct *Type
-  struct Structure *next
+  struct Type *type;
+  struct Structure *next;
 } Structure;
 
 typedef struct Value {
   Type *type;
   char *val;
-}
+} Value;
 
 typedef struct Symbol {
   char name[SYMBOL_NAME_LENGTH];
@@ -62,10 +62,10 @@ typedef struct TableEntry {
   SymbolType symbol_type;
   Symbol *symbol;
   unsigned long index;
-  TableEntry *lprev;
-  TableEntry *lnext;
-  TableEntry *cprev;
-  TableEntry *cnext;
+  struct TableEntry *lprev;
+  struct TableEntry *lnext;
+  struct TableEntry *cprev;
+  struct TableEntry *cnext;
 } TableEntry;
 
 int exists_symbol(char *name);
@@ -78,6 +78,7 @@ int set_symbol(char *name, Value *value);
 
 int unset_symbol(char *name);
 
+//int add_symbol(Symbol *symbol);
 
 
 

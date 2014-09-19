@@ -1,4 +1,7 @@
 #include "includes.h"
+#include "repl.h"
+#include <stdlib.h>
+#include <unistd.h>
 
 #define OPTION_STRING "v:qf:e:"
 
@@ -50,7 +53,7 @@ int main(int argc, char **argv){
         prompt = optarg;
         break;
       default:
-        fprintf(stderr,"Usage: %s [-q | -v] [-f <file name>] [-e <eval string>]");
+        fprintf(stderr,"Usage: %s [-q | -v] [-f <file name>] [-e <eval string>]\n",argv[0]);
         exit(EXIT_FAILURE);
     }
   }

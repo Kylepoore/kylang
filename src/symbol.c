@@ -1,8 +1,9 @@
 #include "includes.h"
-
+#include "symbol.h"
 #define HASHTABLE_INIT_SIZE 1117
 #define GROWTH_FACTOR 1.5
 #define REHASH_RATIO .75
+#define OFFSET_MULTIPLIER 71
 
 #define ODDIFY(A) ((A)|1)
 
@@ -22,14 +23,14 @@ Type *malloc_type(){
 void free_type(Type *type){
   vprintf(NONE,"freeing type...\n");
   if(type == NULL) return;
-  if(type->next == NULL){
+  if(type->modifies == NULL){
     free_structure(type->structure);
     type->structure = NULL;
     free(type);
     type = NULL;
     return;
   }
-  free_type(type->next);
+  free_type(type->modifies);
   free_structure(type->structure);
   type->structure = NULL;
   free(type);
@@ -50,7 +51,7 @@ void free_structure(Structure *structure){
   }
   if(structure->next != NULL){
     free_structure(structure->next);
-    Structure->next = NULL;
+    structure->next = NULL;
   }
   free(structure);
   return;
@@ -77,7 +78,7 @@ Symbol *malloc_symbol(){
 void free_symbol(Symbol *sym){
   vprintf(LOW,"freeing symbol %s...\n",sym->name);
   if(sym == NULL) return;
-  if(sym->value != NULL){
+  if(sym->val != NULL){
     free_value(sym->val);
   }
   free(sym);
@@ -112,8 +113,8 @@ int grow_hashtable(TableEntry ***tbl, int size){
 
 void free_entry_list(TableEntry *tbl){
   TableEntry *next;
-  for(tbl;tbl != NULL; tbl = next){
-    next = tbl->next;
+  for(;tbl != NULL; tbl = next){
+    next = tbl->lnext;
     free(tbl);
   }
 }
@@ -121,11 +122,11 @@ void free_entry_list(TableEntry *tbl){
 void free_hashtable(TableEntry **tbl){
   vprintf(LOW,"freeing symbol table...\n");
   free(tbl);
-  free_entry_list(entry_list);
+  free_entry_list(entry_list_head);
 }
 
 unsigned long hash_name(char *name){
-  vprintf(LOW,"hashing name %s...\n",symbol->name);
+  vprintf(LOW,"hashing name %s...\n",name);
   int length = strlen(name);
   unsigned long index = 0;
   unsigned long offset = 1;
@@ -137,7 +138,7 @@ unsigned long hash_name(char *name){
   return index;
 }
 
-unsigned long hash_symbol(Symbol symbol){
+unsigned long hash_symbol(Symbol *symbol){
   return hash_name(symbol->name);
 }
 
@@ -159,7 +160,7 @@ int same_type(Type *typea, Type *typeb){
     }
     Structure *currenta = typea->structure;
     Structure *currentb = typeb->structure;
-    for(currenta,currentb;currenta!=NULL && currentb!=NULL;currenta=currenta->next,currentb=currentb->next){
+    for(;currenta!=NULL && currentb!=NULL;currenta=currenta->next,currentb=currentb->next){
       if(!same_type(currenta->type,currentb->type)){
         return 0;
       }
@@ -188,8 +189,8 @@ int add_table_entry(TableEntry *entry){
     table[index]->cprev = NULL;
   }else{
     for(current = table[index];current->cnext != NULL;current = current->cnext){
-      if(!strncompare(current->symbol->name,entry->symbol->name)){
-        if(same_type(current->symbol->type,entry->symbol->type)){
+      if(!strcmp(current->symbol->name,entry->symbol->name)){
+        if(same_type(current->symbol->val->type,entry->symbol->val->type)){
           entry->cnext = current->cnext;
           entry->cprev = current->cprev;
           if(current->cprev == NULL){
@@ -217,10 +218,10 @@ int add_table_entry(TableEntry *entry){
 
 void rehash_symbol_table(){
   table_capacity = grow_hashtable(&table,table_capacity);
-  TableEntry current;
+  TableEntry *current;
   table_size = 0;
   for(current = entry_list_head; current != NULL; current = current->lnext){
-    add_entry(current);
+    add_table_entry(current);
   }
 }
 
@@ -256,6 +257,7 @@ int add_symbol(Symbol *symbol){
   if((float)table_size/(float)table_capacity > REHASH_RATIO){
     rehash_symbol_table();
   }
+  return 1;
 }
 
 Symbol* make_symbol(char *name, Value *value){
@@ -273,11 +275,11 @@ Value* make_value(Type *type, char *val){
   return value;
 }
 
-Table_Entry* get_table_entry(char *name){
+TableEntry* get_table_entry(char *name){
   unsigned long hash = hash_name(name);
   int index = hash % table_capacity;
   TableEntry *current;
-  for(current=table[index];current != null;current = current->next){
+  for(current=table[index];current != NULL;current = current->cnext){
     if(!strncmp(name,current->symbol->name,SYMBOL_NAME_LENGTH)){
       return current;
     }
@@ -318,7 +320,7 @@ int set_symbol(char *name, Value *value){
   if(symbol == NULL){
     return 1;
   }
-  if(symbol->val == null){
+  if(symbol->val == NULL){
     symbol->val = value;
     return 0;
   }
@@ -345,7 +347,7 @@ int unset_symbol(char *name){
   if(entry->cprev != NULL){
     entry->cprev->cnext = entry->cnext;
   }else{
-    tabe[entry->hash % table_capacity] = entry->cnext;
+    table[entry->index % table_capacity] = entry->cnext;
   }
   if(entry->cnext != NULL){
     entry->cnext->cprev = entry->cprev;

@@ -1,17 +1,19 @@
 #ifndef PRINT_H
 #define PRINT_H
 
-int type_to_string(Type type, char *str);
+#include "symbol.h"
 
-void print_type(Type type);
+int type_to_string(Type *type, char *str);
 
-int value_to_string(Value value, char *str);
+void print_type(Type *type);
 
-void print_value(Value value);
+int value_to_string(Value *value, char *str);
 
-int variable_to_string(Variable var, char *str);
+void print_value(Value *value);
 
-void print_variable(Variable var);
+int symbol_to_string(Symbol *var, char *str);
+
+void print_symbol(Symbol *var);
 
 
 #endif
