@@ -11,10 +11,12 @@ InputLine * get_input_line(FILE *fp){
   
   while(!done){
     current->next = NULL;
+    current->ateof = 0;
     ret = fgets(current->value, LINE_SEGMENT_LENGTH - 1, fp);
     if(ret == NULL){
-      eprintf("eof or error\n");
+      vprintf(NONE,"eof or error\n");
       current->length = strlen(current->value);
+      current->ateof = 1;
       done = 1;
     }else{
       current->length = strlen(current->value);

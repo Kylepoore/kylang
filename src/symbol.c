@@ -126,7 +126,7 @@ void free_hashtable(TableEntry **tbl){
 }
 
 unsigned long hash_name(char *name){
-  vprintf(LOW,"hashing name %s...\n",name);
+  vprintf(NONE,"hashing name %s...\n",name);
   int length = strlen(name);
   unsigned long index = 0;
   unsigned long offset = 1;

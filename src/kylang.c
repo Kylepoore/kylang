@@ -81,3 +81,11 @@ int main(int argc, char **argv){
 
   return 1;
 }
+
+
+int quit(){
+  vprintf(LOW,"Goodbye!\n");
+  exit(EXIT_SUCCESS);
+  return(0);
+}
+

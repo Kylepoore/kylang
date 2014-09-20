@@ -5,6 +5,7 @@
 
 typedef struct InputLine {
   int length;
+  int ateof;
   char value[LINE_SEGMENT_LENGTH];
   struct InputLine *next;
 } InputLine;

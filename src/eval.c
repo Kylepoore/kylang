@@ -1,7 +1,11 @@
 #include "eval.h"
-#include "Symbol.h"
+#include "symbol.h"
+#include "includes.h"
 
 Value * eval(InputLine *input){
+  if(input->ateof){
+    quit();
+  }
   Value *val = malloc(sizeof(Value));
   return val;
 

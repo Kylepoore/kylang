@@ -27,6 +27,7 @@ typedef enum {
     fprintf(stderr, format, ##__VA_ARGS__);        \
 } while(0)
 
+int quit();
 
 extern int verbosity;
 extern int quiet;
